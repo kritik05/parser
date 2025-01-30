@@ -1,0 +1,17 @@
+server:
+  port: 8082
+
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: "parser-group-v2"
+      auto-offset-reset: latest
+
+app:
+  kafka:
+    topics:
+      filelocation: "file-location-topic"
+  elasticsearch:
+    uris: http://localhost:9200
+    index: "findings-index"
