@@ -2,10 +2,10 @@ package com.parser.Parser.Application.model;
 
 public class FileLocationEvent {
 
-    private String filePath; // e.g. /tmp/scan/codescan/owner/repo/scan...
+    private String filePath;
     private String owner;
     private String repo;
-    private String toolName; // e.g. "codescan", "dependabot", or "secretscan"
+    private String toolName;
 
     public FileLocationEvent() {}
 

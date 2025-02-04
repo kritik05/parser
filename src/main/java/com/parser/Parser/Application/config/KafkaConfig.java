@@ -30,19 +30,15 @@ public class KafkaConfig {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
 
-        // Wrap the delegate deserializers in ErrorHandlingDeserializer
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ErrorHandlingDeserializer.class);
 
-        // Point to the actual delegates
         props.put(ErrorHandlingDeserializer.KEY_DESERIALIZER_CLASS, StringDeserializer.class);
         props.put(ErrorHandlingDeserializer.VALUE_DESERIALIZER_CLASS, JsonDeserializer.class);
 
-        // If you're using JSON, trust all packages or specify your model package
         props.put(JsonDeserializer.USE_TYPE_INFO_HEADERS, false);
         props.put(JsonDeserializer.VALUE_DEFAULT_TYPE, "com.parser.Parser.Application.model.FileLocationEvent");
         props.put(JsonDeserializer.TRUSTED_PACKAGES, "*");
-        // group.id, etc.
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "parser-group");
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "latest");
 

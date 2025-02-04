@@ -38,7 +38,6 @@ public class ParserConsumer {
         FileLocationEvent fle = record.value();
         System.out.println("Received FileLocationEvent: " + fle);
 
-        // 1) read the file from fle.getFilePath()
         File file = new File(fle.getFilePath());
         if (!file.exists()) {
             System.err.println("File not found at path: " + fle.getFilePath());
@@ -46,18 +45,12 @@ public class ParserConsumer {
         }
 
         try {
-            // read raw JSON as a string
             String rawJson = Files.readString(file.toPath());
-
-            // 2) convert fle.getToolName() to our ToolType enum
             ToolType toolType = mapToolType(fle.getToolName());
-
-            // 3) parse it
             List<Finding> findings = parserService.parse(toolType, rawJson);
 
-            // 4) index each
             for (Finding f : findings) {
-                elasticsearchService.indexFinding(f);
+                elasticsearchService.upsertFinding(f);
                 System.out.println("Indexed finding with ID=" + f.getId());
             }
 
@@ -66,10 +59,9 @@ public class ParserConsumer {
         }
     }
 
-    // Convert string from Tool Scheduler ("codescan", "dependabot", "secretscan") to ToolType enum
     private ToolType mapToolType(String toolName) {
         if (toolName == null) {
-            return ToolType.CODESCAN; // fallback
+            return ToolType.CODESCAN;
         }
         switch (toolName.toLowerCase()) {
             case "codescan":
@@ -79,7 +71,7 @@ public class ParserConsumer {
             case "secretscan":
                 return ToolType.SECRETSCAN;
             default:
-                return ToolType.CODESCAN; // fallback
+                return ToolType.CODESCAN;
         }
     }
 }

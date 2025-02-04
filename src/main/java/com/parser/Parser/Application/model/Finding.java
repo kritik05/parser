@@ -5,22 +5,29 @@ import java.util.Map;
 
 public class Finding {
 
-    private String id;             // could be from the tool's "number" or a random UUID
-    private ToolType toolType;     // code scanning, dependabot, or secret scanning
+    private String id;
+    private ToolType toolType;
     private String title;
     private String description;
     private Status status;
     private Severity severity;
-//    private Instant createdAt;
-//    private Instant updatedAt;
     private String url;
     private String cve;
     private String cwe;
     private Double cvss;
-    private String location;       // e.g. file path or dependency location
-    private Map<String, Object> additionalData; // leftover fields
+    private String location;
+    private Map<String, Object> additionalData;
+    private String updatedAt;
 
     public Finding() {}
+
+    public String getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(String updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 
     public String getId() {
         return id;
@@ -69,22 +76,6 @@ public class Finding {
     public void setSeverity(Severity severity) {
         this.severity = severity;
     }
-
-//    public Instant getCreatedAt() {
-//        return createdAt;
-//    }
-//
-//    public void setCreatedAt(Instant createdAt) {
-//        this.createdAt = createdAt;
-//    }
-//
-//    public Instant getUpdatedAt() {
-//        return updatedAt;
-//    }
-//
-//    public void setUpdatedAt(Instant updatedAt) {
-//        this.updatedAt = updatedAt;
-//    }
 
     public String getUrl() {
         return url;
@@ -143,14 +134,13 @@ public class Finding {
                 ", description='" + description + '\'' +
                 ", status=" + status +
                 ", severity=" + severity +
-//                ", createdAt=" + createdAt +
-//                ", updatedAt=" + updatedAt +
                 ", url='" + url + '\'' +
                 ", cve='" + cve + '\'' +
                 ", cwe='" + cwe + '\'' +
                 ", cvss=" + cvss +
                 ", location='" + location + '\'' +
                 ", additionalData=" + additionalData +
+                ", updatedAt='" + updatedAt + '\'' +
                 '}';
     }
 }
