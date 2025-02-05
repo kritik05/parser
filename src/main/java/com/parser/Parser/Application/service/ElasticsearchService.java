@@ -28,6 +28,7 @@ public class ElasticsearchService {
     public ElasticsearchService(ElasticsearchClient esClient) {
         this.esClient = esClient;
     }
+
     private static String computeHash(String data) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
@@ -41,6 +42,7 @@ public class ElasticsearchService {
             throw new RuntimeException("Error computing hash", e);
         }
     }
+
     public void upsertFinding(Finding newFinding) throws IOException {
         if (!doesIndexExist()) {
             newFinding.setUpdatedAt(Instant.now().toString());
@@ -62,11 +64,17 @@ public class ElasticsearchService {
             Finding found = matchedFinding.get();
             String oldSeverityStatusHash = computeHash(found.getSeverity() + "-" + found.getStatus());
             String newSeverityStatusHash = computeHash(newFinding.getSeverity() + "-" + newFinding.getStatus());
-
-           newFinding.setId(found.getId());
+            if(!oldSeverityStatusHash.equals(newSeverityStatusHash)){
+                newFinding.setUpdatedAt(Instant.now().toString());
+                newFinding.setId(found.getId());
+                indexFinding(newFinding);
+            }
         }
-        newFinding.setUpdatedAt(Instant.now().toString());
-        indexFinding(newFinding);
+        else{
+            newFinding.setUpdatedAt(Instant.now().toString());
+            indexFinding(newFinding);
+        }
+
     }
 
     public void indexFinding(Finding finding) throws IOException {

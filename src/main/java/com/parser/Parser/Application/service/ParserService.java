@@ -62,8 +62,9 @@ public class ParserService {
 
         f.setDescription(rule.path("full_description").asText(""));
 
+        String dismissedReason = node.path("dismissed_reason").asText("");
         String rawState = node.path("state").asText("open");
-        f.setStatus(codeScanMapper.mapStatus(rawState));
+        f.setStatus(codeScanMapper.mapStatus(rawState,dismissedReason));
 
         String rawSev = rule.path("security_severity_level").asText("medium");
         f.setSeverity(codeScanMapper.mapSeverity(rawSev));
@@ -130,8 +131,9 @@ public class ParserService {
         f.setTitle(advisory.path("summary").asText("Unnamed Dependabot Alert"));
         f.setDescription(advisory.path("description").asText(""));
 
+        String dismissedReason = node.path("dismissed_reason").asText("");
         String rawState = node.path("state").asText("open");
-        f.setStatus(dependabotMapper.mapStatus(rawState));
+        f.setStatus(dependabotMapper.mapStatus(rawState,dismissedReason));
 
         String rawSev = advisory.path("severity").asText("medium");
         f.setSeverity(dependabotMapper.mapSeverity(rawSev));

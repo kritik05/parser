@@ -6,17 +6,31 @@ import com.parser.Parser.Application.model.Status;
 
 public class DependabotMapper {
 
-    public Status mapStatus(String rawState) {
+    public Status mapStatus(String rawState,String dismissedReason) {
         if (rawState == null) {
             return Status.OPEN;
         }
-        switch (rawState.toLowerCase()) {
+        String lowerState = rawState.toLowerCase();
+        String lowerReason = (dismissedReason == null) ? "" : dismissedReason.toLowerCase();
+
+        switch (lowerState) {
             case "open":
                 return Status.OPEN;
             case "auto_dismissed":
                 return Status.SUPPRESSED;
             case "dismissed":
-                return Status.FALSE_POSITIVE;
+                switch (lowerReason) {
+                    case "fix_started":
+                        return Status.SUPPRESSED;
+                    case "inaccurate":
+                        return Status.FALSE_POSITIVE;
+                    case "no_bandwidth":
+                    case "not_used":
+                    case "tolerable_risk":
+                        return Status.SUPPRESSED;
+                    default:
+                        return Status.FALSE_POSITIVE;
+                }
             case "fixed":
                 return Status.FIXED;
             default:
