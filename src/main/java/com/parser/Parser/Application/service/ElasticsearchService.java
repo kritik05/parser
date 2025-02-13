@@ -8,7 +8,6 @@ import co.elastic.clients.elasticsearch.core.SearchResponse;
 import co.elastic.clients.elasticsearch.core.search.Hit;
 import com.parser.Parser.Application.model.Finding;
 import com.parser.Parser.Application.model.ToolType;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.security.MessageDigest;
@@ -21,9 +20,6 @@ import java.util.stream.Collectors;
 public class ElasticsearchService {
 
     private final ElasticsearchClient esClient;
-
-    @Value("${app.elasticsearch.index}")
-    private String indexName;
 
     public ElasticsearchService(ElasticsearchClient esClient) {
         this.esClient = esClient;
@@ -43,15 +39,15 @@ public class ElasticsearchService {
         }
     }
 
-    public void upsertFinding(Finding newFinding) throws IOException {
-        if (!doesIndexExist()) {
+    public void upsertFinding(Finding newFinding,String indexName) throws IOException {
+        if (!doesIndexExist(indexName)) {
             newFinding.setUpdatedAt(Instant.now().toString());
-            indexFinding(newFinding);
+            indexFinding(newFinding,indexName);
             return;
         }
         String alertId = getAlertIdFromAdditionalData(newFinding);
         String firstHash =  computeHash(alertId.trim() + newFinding.getTitle().trim());
-        List<Finding> existingSameToolType = findByToolType(newFinding.getToolType());
+        List<Finding> existingSameToolType = findByToolType(newFinding.getToolType(),indexName);
         Optional<Finding> matchedFinding = existingSameToolType.stream()
                 .filter(f -> {
                     String fAlertId = getAlertIdFromAdditionalData(f);
@@ -67,17 +63,17 @@ public class ElasticsearchService {
             if(!oldSeverityStatusHash.equals(newSeverityStatusHash)){
                 newFinding.setUpdatedAt(Instant.now().toString());
                 newFinding.setId(found.getId());
-                indexFinding(newFinding);
+                indexFinding(newFinding,indexName);
             }
         }
         else{
             newFinding.setUpdatedAt(Instant.now().toString());
-            indexFinding(newFinding);
+            indexFinding(newFinding,indexName);
         }
 
     }
 
-    public void indexFinding(Finding finding) throws IOException {
+    public void indexFinding(Finding finding,String indexName) throws IOException {
         if (finding.getId() == null) {
             finding.setId(UUID.randomUUID().toString());
         }
@@ -89,7 +85,7 @@ public class ElasticsearchService {
         IndexResponse response = esClient.index(request);
     }
 
-    public List<Finding> findByToolType(ToolType toolType) throws IOException {
+    public List<Finding> findByToolType(ToolType toolType,String indexName) throws IOException {
         try {
             SearchResponse<Finding> response = esClient.search(s -> s
                     .index(indexName)
@@ -120,7 +116,7 @@ public class ElasticsearchService {
         }
         return "";
     }
-    private boolean doesIndexExist() {
+    private boolean doesIndexExist(String indexName) {
         try {
             return esClient.indices().exists(e -> e.index(indexName)).value();
         } catch (IOException e) {

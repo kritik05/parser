@@ -49,8 +49,9 @@ public class ParserConsumer {
             ToolType toolType = mapToolType(fle.getToolName());
             List<Finding> findings = parserService.parse(toolType, rawJson);
 
+            String findingIndex = fle.getFindingindex();
             for (Finding f : findings) {
-                elasticsearchService.upsertFinding(f);
+                elasticsearchService.upsertFinding(f,findingIndex);
                 System.out.println("Indexed finding with ID=" + f.getId());
             }
 

@@ -3,38 +3,47 @@ package com.parser.Parser.Application.model;
 public class FileLocationEvent {
 
     private String filePath;
-    private String owner;
-    private String repo;
     private String toolName;
+    private String findingindex;
 
     public FileLocationEvent() {}
 
-    public FileLocationEvent(String filePath, String owner, String repo, String toolName) {
+    public FileLocationEvent(String filePath, String toolName,String findingindex) {
         this.filePath = filePath;
-        this.owner = owner;
-        this.repo = repo;
+        this.toolName = toolName;
+        this.findingindex=findingindex;
+    }
+
+    public String getFilePath() {
+        return filePath;
+    }
+
+    public void setFilePath(String filePath) {
+        this.filePath = filePath;
+    }
+
+    public String getToolName() {
+        return toolName;
+    }
+
+    public void setToolName(String toolName) {
         this.toolName = toolName;
     }
 
-    public String getFilePath() { return filePath; }
-    public void setFilePath(String filePath) { this.filePath = filePath; }
+    public String getFindingindex() {
+        return findingindex;
+    }
 
-    public String getOwner() { return owner; }
-    public void setOwner(String owner) { this.owner = owner; }
-
-    public String getRepo() { return repo; }
-    public void setRepo(String repo) { this.repo = repo; }
-
-    public String getToolName() { return toolName; }
-    public void setToolName(String toolName) { this.toolName = toolName; }
+    public void setFindingindex(String findingindex) {
+        this.findingindex = findingindex;
+    }
 
     @Override
     public String toString() {
         return "FileLocationEvent{" +
                 "filePath='" + filePath + '\'' +
-                ", owner='" + owner + '\'' +
-                ", repo='" + repo + '\'' +
                 ", toolName='" + toolName + '\'' +
+                ", findingindex='" + findingindex + '\'' +
                 '}';
     }
 }
