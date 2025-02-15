@@ -2,6 +2,14 @@ server:
   port: 8082
 
 spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/capstone
+    username: capstone
+    password: MyCapstonePassword
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
   kafka:
     bootstrap-servers: localhost:9092
     consumer:
@@ -11,6 +19,7 @@ spring:
 app:
   kafka:
     topics:
-      filelocation: "file-location-topic"
+      parser: "jfc-parser"
+      ack: "ack-topic"
   elasticsearch:
     uris: http://localhost:9200
