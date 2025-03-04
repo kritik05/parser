@@ -99,7 +99,7 @@ public class ParserService {
 
         Map<String, Object> leftover = objectMapper.convertValue(node, Map.class);
         f.setAdditionalData(leftover);
-
+        f.setTicketId(null);
         return f;
     }
 
@@ -158,7 +158,7 @@ public class ParserService {
         f.setAdditionalData(leftover);
 
         f.setAdditionalData(leftover);
-
+        f.setTicketId(null);
         return f;
     }
 
@@ -208,7 +208,7 @@ public class ParserService {
         f.setAdditionalData(leftover);
 
         f.setAdditionalData(leftover);
-
+        f.setTicketId(null);
         return f;
     }
 

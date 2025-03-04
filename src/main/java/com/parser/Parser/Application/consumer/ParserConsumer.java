@@ -1,7 +1,10 @@
 package com.parser.Parser.Application.consumer;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.parser.Parser.Application.event.AcknowledgementEvent;
 import com.parser.Parser.Application.event.ParseRequestEvent;
+import com.parser.Parser.Application.event.RunbookRequestEvent;
 import com.parser.Parser.Application.model.*;
 import com.parser.Parser.Application.repository.TenantRepository;
 import com.parser.Parser.Application.service.ElasticsearchService;
@@ -14,8 +17,8 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class ParserConsumer {
@@ -23,6 +26,9 @@ public class ParserConsumer {
     private final ParserService parserService;
     private final ElasticsearchService elasticsearchService;
     private final KafkaTemplate<String, Object> ackTemplate;
+    private final KafkaTemplate<String, String> sendingJob;
+    private final ObjectMapper objectMapper;
+    private final Random random = new Random();
 
     @Value("${app.kafka.topics.parser}")
     private String topic;
@@ -30,11 +36,17 @@ public class ParserConsumer {
     @Value("${app.kafka.topics.ack}")
     private String ackTopic;
 
-    public ParserConsumer(ParserService parserService, ElasticsearchService elasticsearchService,TenantRepository tenantRepository,  KafkaTemplate<String, Object> ackTemplate) {
+
+    @Value("${app.kafka.topics.jfcunified}")
+    private String unifiedTopic;
+
+    public ParserConsumer(ParserService parserService, ElasticsearchService elasticsearchService,TenantRepository tenantRepository,  KafkaTemplate<String, Object> ackTemplate, KafkaTemplate<String, String> sendingJob, ObjectMapper objectMapper) {
         this.parserService = parserService;
         this.elasticsearchService = elasticsearchService;
         this.tenantRepository=tenantRepository;
         this.ackTemplate=ackTemplate;
+        this.sendingJob=sendingJob;
+        this.objectMapper=objectMapper;
     }
 
     @KafkaListener(
@@ -42,7 +54,9 @@ public class ParserConsumer {
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "parseRequestEventListenerContainerFactory"
     )
-    public void consumeParseRequestEvent(ParseRequestEvent event) {
+    public void consumeParseRequestEvent(ParseRequestEvent event) throws JsonProcessingException {
+        String originalEventId = event.getEventId();
+        try{
         String filePath = event.getPayload().getFilePath();
         String tooltype = event.getPayload().getTooltype();
         Integer tenantId = event.getPayload().getTenantId();
@@ -61,24 +75,51 @@ public class ParserConsumer {
             return;
         }
 
-        try {
+
             String rawJson = Files.readString(file.toPath());
             ToolType toolType = mapToolType(tooltype);
             List<Finding> findings = parserService.parse(toolType, rawJson);
 
             String findingIndex = tenant.getFindingindex();
+            List<String> findingIds = new ArrayList<>();
+
             for (Finding f : findings) {
-                elasticsearchService.upsertFinding(f,findingIndex);
-                System.out.println("Indexed finding with ID=" + f.getId());
+                String id=elasticsearchService.upsertFinding(f,findingIndex);
+                if(id!="") findingIds.add(id);
+                System.out.println("Indexed finding with ID=" + id);
             }
 
-            String originalEventId = event.getEventId();
+
             AcknowledgementPayload ackPayload = new AcknowledgementPayload(originalEventId, "SUCCESS");
             AcknowledgementEvent ackEvent = new AcknowledgementEvent(null, ackPayload);
             ackTemplate.send(ackTopic, ackEvent);
             System.out.println("sent ack from parser");
+
+            int sleepMs = 3000 + random.nextInt(3000);
+            Thread.sleep(sleepMs);
+
+
+
+            RunbookPayload runbookPayload = new RunbookPayload(
+                            null,
+                            tenantId,
+                            findingIds,
+                            "SCAN_EVENT"
+                    );
+
+                    RunbookRequestEvent runbookRequestEvent = new RunbookRequestEvent(runbookPayload);
+                    String json = objectMapper.writeValueAsString(runbookRequestEvent);
+                    sendingJob.send(unifiedTopic, json);
+            System.out.println(runbookRequestEvent);
+                    System.out.println("Sent RunbookEvent for tenant=" + tenantId);
+
         } catch (IOException e) {
-            e.printStackTrace();
+            AcknowledgementPayload ackPayload = new AcknowledgementPayload(originalEventId, "FAIL");
+            AcknowledgementEvent ackEvent = new AcknowledgementEvent(null, ackPayload);
+            ackTemplate.send(ackTopic, ackEvent);
+            System.out.println("sent ack from parser");
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 

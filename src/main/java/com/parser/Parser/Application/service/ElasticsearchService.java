@@ -39,11 +39,11 @@ public class ElasticsearchService {
         }
     }
 
-    public void upsertFinding(Finding newFinding,String indexName) throws IOException {
+    public String upsertFinding(Finding newFinding,String indexName) throws IOException {
         if (!doesIndexExist(indexName)) {
             newFinding.setUpdatedAt(Instant.now().toString());
-            indexFinding(newFinding,indexName);
-            return;
+            return indexFinding(newFinding,indexName);
+
         }
         String alertId = getAlertIdFromAdditionalData(newFinding);
         String firstHash =  computeHash(alertId.trim() + newFinding.getTitle().trim());
@@ -63,26 +63,32 @@ public class ElasticsearchService {
             if(!oldSeverityStatusHash.equals(newSeverityStatusHash)){
                 newFinding.setUpdatedAt(Instant.now().toString());
                 newFinding.setId(found.getId());
-                indexFinding(newFinding,indexName);
+               return indexFinding(newFinding,indexName);
+            }
+            else {
+                return found.getId();
             }
         }
         else{
             newFinding.setUpdatedAt(Instant.now().toString());
-            indexFinding(newFinding,indexName);
+            return indexFinding(newFinding,indexName);
         }
-
+//        return"";
     }
 
-    public void indexFinding(Finding finding,String indexName) throws IOException {
+    public String indexFinding(Finding finding,String indexName) throws IOException {
+        String id;
         if (finding.getId() == null) {
             finding.setId(UUID.randomUUID().toString());
         }
+        id=finding.getId();
         IndexRequest<Finding> request = IndexRequest.of(i -> i
                 .index(indexName)
                 .id(finding.getId())
                 .document(finding)
         );
         IndexResponse response = esClient.index(request);
+        return id;
     }
 
     public List<Finding> findByToolType(ToolType toolType,String indexName) throws IOException {

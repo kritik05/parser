@@ -68,6 +68,21 @@ public class KafkaConfig {
         factory.setConsumerFactory(parseRequestEventConsumerFactory());
         return factory;
     }
+
+    @Bean
+    public ProducerFactory<String, String> eventProducerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP);
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        // Use StringSerializer for value as well
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        return new DefaultKafkaProducerFactory<>(configProps);
+    }
+    @Bean
+    public KafkaTemplate<String, String> eventKafkaTemplate() {
+        return new KafkaTemplate<>(eventProducerFactory());
+    }
+
     @Bean
     public DefaultErrorHandler errorHandler(KafkaTemplate<String, Object> template) {
         // Retry 3 times (interval=0), then DLT

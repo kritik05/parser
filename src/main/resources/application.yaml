@@ -21,5 +21,6 @@ app:
     topics:
       parser: "jfc-parser"
       ack: "ack-topic"
+      jfcunified: "jfc-common-jobs"
   elasticsearch:
     uris: http://localhost:9200

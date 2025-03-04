@@ -2,7 +2,6 @@ package com.parser.Parser.Application.model;
 import jakarta.persistence.*;
 
 import java.util.Objects;
-
 @Entity
 @Table(name = "tenant")
 public class Tenant {
@@ -27,16 +26,30 @@ public class Tenant {
     @Column(nullable = false)
     private String tenant_name;
 
-    public Tenant(){};
-    public Tenant(Integer id, String owner, String repo, String pat, String findingindex,String tenant_name) {
+    private String project_key;
+
+    private String token;
+
+    private String project_name;
+
+    private String username;
+
+    public Tenant() {
+    };
+
+
+    public Tenant(Integer id, String owner, String repo, String pat, String findingindex, String tenant_name, String project_key, String token, String project_name, String username) {
         this.id = id;
         this.owner = owner;
         this.repo = repo;
         this.pat = pat;
         this.findingindex = findingindex;
-        this.tenant_name=tenant_name;
+        this.tenant_name = tenant_name;
+        this.project_key = project_key;
+        this.token = token;
+        this.project_name = project_name;
+        this.username = username;
     }
-
 
     public Integer getId() {
         return id;
@@ -77,6 +90,7 @@ public class Tenant {
     public void setFindingindex(String findingindex) {
         this.findingindex = findingindex;
     }
+
     public String getTenant_name() {
         return tenant_name;
     }
@@ -85,25 +99,37 @@ public class Tenant {
         this.tenant_name = tenant_name;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Tenant)) return false;
-        Tenant tenant = (Tenant) o;
-        return Objects.equals(id, tenant.id)
-                && Objects.equals(repo, tenant.repo)
-                && Objects.equals(owner, tenant.owner)
-                && Objects.equals(pat, tenant.pat)
-                && Objects.equals(findingindex, tenant.findingindex)
-                && Objects.equals(tenant_name, tenant.tenant_name);
+    public String getProject_key() {
+        return project_key;
     }
 
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id, repo, owner, pat, findingindex, tenant_name);
+    public void setProject_key(String project_key) {
+        this.project_key = project_key;
     }
 
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public String getProject_name() {
+        return project_name;
+    }
+
+    public void setProject_name(String project_name) {
+        this.project_name = project_name;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
     @Override
     public String toString() {
@@ -114,6 +140,11 @@ public class Tenant {
                 ", pat='" + pat + '\'' +
                 ", findingindex='" + findingindex + '\'' +
                 ", tenant_name='" + tenant_name + '\'' +
+                ", project_key='" + project_key + '\'' +
+                ", token='" + token + '\'' +
+                ", project_name='" + project_name + '\'' +
+                ", username='" + username + '\'' +
                 '}';
     }
+
 }

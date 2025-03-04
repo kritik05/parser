@@ -18,6 +18,8 @@ public class Finding {
     private String location;
     private Map<String, Object> additionalData;
     private String updatedAt;
+    private String ticketId;
+
 
     public Finding() {}
 
@@ -28,6 +30,15 @@ public class Finding {
     public void setUpdatedAt(String updatedAt) {
         this.updatedAt = updatedAt;
     }
+
+    public String getTicketId() {
+        return ticketId;
+    }
+
+    public void setTicketId(String ticketId) {
+        this.ticketId = ticketId;
+    }
+
 
     public String getId() {
         return id;
@@ -141,6 +152,7 @@ public class Finding {
                 ", location='" + location + '\'' +
                 ", additionalData=" + additionalData +
                 ", updatedAt='" + updatedAt + '\'' +
+                ", ticketId='" + ticketId + '\'' +
                 '}';
     }
 }
